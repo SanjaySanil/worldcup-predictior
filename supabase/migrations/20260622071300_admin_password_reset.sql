@@ -10,6 +10,10 @@
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS reset_code TEXT;
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS reset_requested BOOLEAN DEFAULT false;
 
+-- Drop old functions first (prevents parameter name change errors in Postgres)
+DROP FUNCTION IF EXISTS public.request_password_reset(text);
+DROP FUNCTION IF EXISTS public.reset_user_password_by_code(text, text, text);
+
 -- 2. Create the request function (called anonymously)
 -- Generates a secure random 6-digit code and stores it on the user's profile.
 -- Does not return the code to the caller (admin must retrieve it from DB).
