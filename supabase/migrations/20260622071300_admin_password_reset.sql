@@ -3,6 +3,7 @@
 -- Adds reset_code and reset_requested to profiles.
 -- Creates SECURITY DEFINER functions to securely request and perform
 -- password resets without requiring SMTP/email server setup.
+-- Supports lookup by either username or email address.
 -- =========================================================================
 
 -- 1. Add reset columns to public.profiles
@@ -12,7 +13,7 @@ ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS reset_requested BOOLEAN DEF
 -- 2. Create the request function (called anonymously)
 -- Generates a secure random 6-digit code and stores it on the user's profile.
 -- Does not return the code to the caller (admin must retrieve it from DB).
-CREATE OR REPLACE FUNCTION public.request_password_reset(p_username TEXT)
+CREATE OR REPLACE FUNCTION public.request_password_reset(p_username_or_email TEXT)
 RETURNS BOOLEAN
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -20,16 +21,19 @@ SET search_path = public
 AS $$
 DECLARE
   v_code TEXT;
-  v_user_exists BOOLEAN;
+  v_user_id UUID;
 BEGIN
-  -- Normalize username to lowercase
-  p_username := lower(trim(p_username));
+  -- Normalize input
+  p_username_or_email := lower(trim(p_username_or_email));
 
-  -- Check if username exists
-  SELECT EXISTS(SELECT 1 FROM public.profiles WHERE username = p_username) INTO v_user_exists;
+  -- Check if user exists by username or email
+  SELECT p.id INTO v_user_id
+  FROM public.profiles p
+  LEFT JOIN auth.users u ON u.id = p.id
+  WHERE p.username = p_username_or_email OR u.email = p_username_or_email;
   
-  IF NOT v_user_exists THEN
-    RAISE EXCEPTION 'User with username "%" not found', p_username;
+  IF v_user_id IS NULL THEN
+    RAISE EXCEPTION 'User with username or email "%" not found', p_username_or_email;
   END IF;
 
   -- Generate a 6-digit random code (e.g. 100000 to 999999)
@@ -39,7 +43,7 @@ BEGIN
   UPDATE public.profiles
   SET reset_code = v_code,
       reset_requested = true
-  WHERE username = p_username;
+  WHERE id = v_user_id;
 
   RETURN TRUE;
 END;
@@ -48,7 +52,7 @@ $$;
 -- 3. Create the reset function (called anonymously with the admin code)
 -- Verifies the code and updates the auth.users table password.
 CREATE OR REPLACE FUNCTION public.reset_user_password_by_code(
-  p_username TEXT,
+  p_username_or_email TEXT,
   p_code TEXT,
   p_new_password TEXT
 )
@@ -61,18 +65,19 @@ DECLARE
   v_user_id UUID;
 BEGIN
   -- Normalize inputs
-  p_username := lower(trim(p_username));
+  p_username_or_email := lower(trim(p_username_or_email));
   p_code := trim(p_code);
 
-  -- Retrieve matching profile id
-  SELECT id INTO v_user_id
-  FROM public.profiles
-  WHERE username = p_username
-    AND reset_requested = true
-    AND reset_code = p_code;
+  -- Retrieve matching profile id by username or email
+  SELECT p.id INTO v_user_id
+  FROM public.profiles p
+  LEFT JOIN auth.users u ON u.id = p.id
+  WHERE (p.username = p_username_or_email OR u.email = p_username_or_email)
+    AND p.reset_requested = true
+    AND p.reset_code = p_code;
 
   IF v_user_id IS NULL THEN
-    RAISE EXCEPTION 'Incorrect username or reset code';
+    RAISE EXCEPTION 'Incorrect username/email or reset code';
   END IF;
 
   -- Update the password hash in Supabase's auth.users table using pgcrypto's crypt

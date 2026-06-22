@@ -53,7 +53,7 @@ export default function Login() {
 
     try {
       const { error: rpcErr } = await (supabase as any).rpc('request_password_reset', {
-        p_username: resetUsername.toLowerCase().trim(),
+        p_username_or_email: resetUsername.toLowerCase().trim(),
       });
 
       if (rpcErr) throw rpcErr;
@@ -81,7 +81,7 @@ export default function Login() {
 
     try {
       const { error: rpcErr } = await (supabase as any).rpc('reset_user_password_by_code', {
-        p_username: resetUsername.toLowerCase().trim(),
+        p_username_or_email: resetUsername.toLowerCase().trim(),
         p_code: resetCode.trim(),
         p_new_password: newPassword,
       });
@@ -203,7 +203,7 @@ export default function Login() {
           {view === 'forgot' && (
             <form onSubmit={handleRequestReset} className="space-y-5">
               <div>
-                <label className="form-label">Username</label>
+                <label className="form-label">Username or Email</label>
                 <div className="relative">
                   <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-pitch-300" />
                   <input
@@ -211,7 +211,7 @@ export default function Login() {
                     value={resetUsername}
                     onChange={e => setResetUsername(e.target.value)}
                     className="form-input pl-10"
-                    placeholder="Enter your username"
+                    placeholder="Enter your username or email"
                     required
                   />
                 </div>
@@ -252,7 +252,7 @@ export default function Login() {
           {view === 'reset' && (
             <form onSubmit={handlePerformReset} className="space-y-5">
               <div>
-                <label className="form-label">Username</label>
+                <label className="form-label">Username or Email</label>
                 <div className="relative">
                   <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-pitch-300" />
                   <input
@@ -260,7 +260,7 @@ export default function Login() {
                     value={resetUsername}
                     onChange={e => setResetUsername(e.target.value)}
                     className="form-input pl-10"
-                    placeholder="Enter your username"
+                    placeholder="Enter your username or email"
                     required
                   />
                 </div>
