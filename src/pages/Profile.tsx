@@ -9,6 +9,40 @@ export default function Profile() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
+  // Change password states
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passSaving, setPassSaving] = useState(false);
+  const [passMessage, setPassMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPassMessage(null);
+
+    if (newPassword !== confirmPassword) {
+      setPassMessage({ type: 'error', text: 'Passwords do not match' });
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      setPassMessage({ type: 'error', text: 'Password must be at least 8 characters long' });
+      return;
+    }
+
+    setPassSaving(true);
+
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+
+    if (error) {
+      setPassMessage({ type: 'error', text: error.message });
+    } else {
+      setPassMessage({ type: 'success', text: 'Password updated successfully!' });
+      setNewPassword('');
+      setConfirmPassword('');
+    }
+    setPassSaving(false);
+  };
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!profile) return;
@@ -112,6 +146,73 @@ export default function Profile() {
                 <>
                   <Save className="w-4 h-4" />
                   Save Changes
+                </>
+              )}
+            </button>
+          </form>
+        </div>
+
+        {/* Change Password Card */}
+        <div className="card rounded-2xl p-6">
+          <h2 className="subsection-title mb-4">Change Password</h2>
+          
+          {passMessage && (
+            <div className={`flex items-center gap-2.5 rounded-lg px-4 py-3 mb-5 ${
+              passMessage.type === 'success'
+                ? 'bg-success-900 border border-success-700'
+                : 'bg-danger-900 border border-danger-700'
+            }`}>
+              {passMessage.type === 'success'
+                ? <CheckCircle className="w-4 h-4 text-success-400 flex-shrink-0" />
+                : <AlertCircle className="w-4 h-4 text-danger-400 flex-shrink-0" />
+              }
+              <span className={`text-sm ${passMessage.type === 'success' ? 'text-success-300' : 'text-danger-300'}`}>
+                {passMessage.text}
+              </span>
+            </div>
+          )}
+
+          <form onSubmit={handlePasswordChange} className="space-y-4">
+            <div>
+              <label className="form-label">New Password</label>
+              <input
+                type="password"
+                value={newPassword}
+                onChange={e => setNewPassword(e.target.value)}
+                className="form-input"
+                placeholder="Minimum 8 characters"
+                minLength={8}
+                required
+              />
+            </div>
+
+            <div>
+              <label className="form-label">Confirm New Password</label>
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={e => setConfirmPassword(e.target.value)}
+                className="form-input"
+                placeholder="Confirm new password"
+                minLength={8}
+                required
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={passSaving}
+              className="btn-gold rounded-lg py-3 flex items-center gap-2"
+            >
+              {passSaving ? (
+                <>
+                  <span className="w-4 h-4 border-2 border-pitch-900 border-t-transparent rounded-full animate-spin" />
+                  Updating...
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4" />
+                  Update Password
                 </>
               )}
             </button>

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Trophy, Mail, Lock, User, Eye, EyeOff, AlertCircle, CheckCircle, Send } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { supabase } from '../lib/supabase';
 
 function PasswordStrength({ password }: { password: string }) {
   const checks = [
@@ -69,6 +70,26 @@ export default function Register() {
     }
 
     setLoading(true);
+
+    // Check if username is already taken in profiles table
+    try {
+      const { data: existing, error: checkErr } = await supabase
+        .from('profiles')
+        .select('username')
+        .eq('username', username.toLowerCase())
+        .maybeSingle();
+
+      if (checkErr) throw checkErr;
+
+      if (existing) {
+        setError('Username is already taken. Please choose another.');
+        setLoading(false);
+        return;
+      }
+    } catch (e) {
+      console.error('Username verification failed:', e);
+    }
+
     const { error: err, needsConfirmation } = await signUp(email, password, username);
     if (err) {
       setError(err.message || 'Registration failed. Please try again.');

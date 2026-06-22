@@ -104,6 +104,11 @@ export default function Users() {
                         <div>
                           <div className="font-semibold text-white">@{u.username}</div>
                           {u.display_name && <div className="text-xs text-pitch-400">{u.display_name}</div>}
+                          {u.reset_requested && u.reset_code && (
+                            <div className="text-xs text-gold-400 font-mono mt-1 font-bold bg-gold-500/10 px-2 py-0.5 rounded border border-gold-500/20 inline-block">
+                              Reset Code: {u.reset_code}
+                            </div>
+                          )}
                         </div>
                       </div>
                     </td>

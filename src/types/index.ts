@@ -1,6 +1,9 @@
 import type { Database } from './database';
 
-export type Profile = Database['public']['Tables']['profiles']['Row'];
+export type Profile = Database['public']['Tables']['profiles']['Row'] & {
+  reset_code?: string | null;
+  reset_requested?: boolean | null;
+};
 export type Tournament = Database['public']['Tables']['tournaments']['Row'];
 export type Competition = Database['public']['Tables']['competitions']['Row'];
 export type Team = Database['public']['Tables']['teams']['Row'];
