@@ -3,6 +3,7 @@ import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { Trophy, User, Bell, Menu, X, LogOut, ChevronDown, BarChart3, History, Star } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
+import HowToPlayModal from './HowToPlayModal';
 
 interface NavbarAnnouncement {
   id: string;
@@ -20,6 +21,7 @@ export default function Navbar() {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [howToPlayOpen, setHowToPlayOpen] = useState(false);
 
   // Notification states
   const [notifOpen, setNotifOpen] = useState(false);
@@ -136,6 +138,12 @@ export default function Navbar() {
                 History
               </NavLink>
             )}
+            <button
+              onClick={() => setHowToPlayOpen(true)}
+              className="px-4 py-2 text-sm font-semibold uppercase tracking-wider text-pitch-200 hover:text-white transition-colors duration-150"
+            >
+              How to Play
+            </button>
           </div>
 
           {/* Right Side */}
@@ -303,29 +311,41 @@ export default function Navbar() {
               Leaderboard
             </NavLink>
             {user && (
-              <>
-                <NavLink
-                  to="/history"
-                  onClick={() => setMenuOpen(false)}
-                  className={({ isActive }) =>
-                    `block px-3 py-2.5 rounded-lg text-sm font-semibold uppercase tracking-wider ${
-                      isActive ? 'bg-pitch-700 text-gold-400' : 'text-pitch-200 hover:text-white hover:bg-pitch-700'
-                    }`
-                  }
-                >
-                  History
-                </NavLink>
-                <button
-                  onClick={handleSignOut}
-                  className="w-full text-left px-3 py-2.5 rounded-lg text-sm font-semibold text-danger-400 hover:bg-pitch-700 uppercase tracking-wider"
-                >
-                  Sign Out
-                </button>
-              </>
+              <NavLink
+                to="/history"
+                onClick={() => setMenuOpen(false)}
+                className={({ isActive }) =>
+                  `block px-3 py-2.5 rounded-lg text-sm font-semibold uppercase tracking-wider ${
+                    isActive ? 'bg-pitch-700 text-gold-400' : 'text-pitch-200 hover:text-white hover:bg-pitch-700'
+                  }`
+                }
+              >
+                History
+              </NavLink>
+            )}
+            <button
+              onClick={() => {
+                setHowToPlayOpen(true);
+                setMenuOpen(false);
+              }}
+              className="block w-full text-left px-3 py-2.5 rounded-lg text-sm font-semibold text-pitch-200 hover:text-white hover:bg-pitch-700 uppercase tracking-wider"
+            >
+              How to Play
+            </button>
+            {user && (
+              <button
+                onClick={handleSignOut}
+                className="w-full text-left px-3 py-2.5 rounded-lg text-sm font-semibold text-danger-400 hover:bg-pitch-700 uppercase tracking-wider"
+              >
+                Sign Out
+              </button>
             )}
           </div>
         </div>
       )}
+
+      {/* How To Play Modal */}
+      <HowToPlayModal isOpen={howToPlayOpen} onClose={() => setHowToPlayOpen(false)} />
     </nav>
   );
 }
