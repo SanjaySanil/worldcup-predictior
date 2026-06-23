@@ -1,7 +1,19 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { Trophy, User, Bell, Menu, X, LogOut, ChevronDown, BarChart3, History, Star } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { supabase } from '../lib/supabase';
+
+interface NavbarAnnouncement {
+  id: string;
+  title: string;
+  body: string;
+  type: 'info' | 'warning' | 'success' | 'error';
+  target_role: string;
+  is_published: boolean;
+  published_at: string | null;
+  created_at: string;
+}
 
 export default function Navbar() {
   const { user, profile, signOut } = useAuth();
@@ -9,11 +21,70 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
+  // Notification states
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [announcements, setAnnouncements] = useState<NavbarAnnouncement[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    const fetchAnnouncements = async () => {
+      let query = supabase
+        .from('announcements')
+        .select('*')
+        .eq('is_published', true);
+      
+      if (profile) {
+        query = query.or(`target_role.eq.all,target_role.eq.${profile.role}`);
+      } else {
+        query = query.eq('target_role', 'all');
+      }
+
+      const { data } = await query.order('published_at', { ascending: false }).limit(5);
+      if (data) {
+        const announcementsData = data as any[];
+        setAnnouncements(announcementsData);
+        
+        // Calculate unread count
+        const lastRead = localStorage.getItem('last_read_announcements');
+        if (lastRead) {
+          const count = announcementsData.filter(a => new Date(a.published_at || a.created_at) > new Date(lastRead)).length;
+          setUnreadCount(count);
+        } else {
+          setUnreadCount(announcementsData.length);
+        }
+      }
+    };
+
+    fetchAnnouncements();
+
+    // Subscribe to new published announcements
+    const channel = supabase
+      .channel('announcements-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'announcements' }, () => {
+        fetchAnnouncements();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [profile]);
+
+  const handleToggleNotifications = () => {
+    setNotifOpen(!notifOpen);
+    setDropdownOpen(false);
+    if (!notifOpen) {
+      setUnreadCount(0);
+      localStorage.setItem('last_read_announcements', new Date().toISOString());
+    }
+  };
+
   const handleSignOut = async () => {
     await signOut();
     navigate('/');
     setMenuOpen(false);
     setDropdownOpen(false);
+    setNotifOpen(false);
   };
 
   return (
@@ -71,10 +142,56 @@ export default function Navbar() {
           <div className="flex items-center gap-3">
             {user ? (
               <>
-                <button className="relative p-2 text-pitch-200 hover:text-white transition-colors">
-                  <Bell className="w-5 h-5" />
-                  <span className="absolute top-1 right-1 w-2 h-2 bg-gold-500 rounded-full"></span>
-                </button>
+                <div className="relative">
+                  <button 
+                    onClick={handleToggleNotifications}
+                    className="relative p-2 text-pitch-200 hover:text-white transition-colors"
+                  >
+                    <Bell className="w-5 h-5" />
+                    {unreadCount > 0 && (
+                      <span className="absolute top-1 right-1 w-2 h-2 bg-gold-500 rounded-full border border-pitch-900 animate-pulse"></span>
+                    )}
+                  </button>
+
+                  {notifOpen && (
+                    <div className="absolute right-0 mt-2 w-80 bg-pitch-700 border border-pitch-600 rounded-xl shadow-card py-2 px-1 z-50 max-h-96 overflow-y-auto animate-slide-in">
+                      <div className="px-4 py-2 border-b border-pitch-600 flex justify-between items-center mb-1">
+                        <span className="font-display font-bold uppercase tracking-wider text-xs text-pitch-200">Notifications</span>
+                        {unreadCount > 0 && (
+                          <span className="bg-gold-500/10 text-gold-400 text-[10px] font-bold px-2 py-0.5 rounded-full border border-gold-500/20">New</span>
+                        )}
+                      </div>
+                      
+                      {announcements.length === 0 ? (
+                        <div className="py-8 text-center text-pitch-400 text-sm">
+                          No notifications yet
+                        </div>
+                      ) : (
+                        <div className="divide-y divide-pitch-600/50">
+                          {announcements.map(a => (
+                            <div key={a.id} className="p-3 hover:bg-pitch-600/40 rounded-lg transition-colors flex gap-2.5">
+                              <div className="flex-shrink-0 mt-0.5">
+                                <span className={`w-2 h-2 rounded-full inline-block ${
+                                  a.type === 'warning' ? 'bg-warn-400' :
+                                  a.type === 'success' ? 'bg-success-400' :
+                                  a.type === 'error' ? 'bg-danger-400' :
+                                  'bg-blue-400'
+                                }`} />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="font-semibold text-white text-xs leading-snug">{a.title}</div>
+                                <p className="text-pitch-300 text-[11px] mt-0.5 leading-normal">{a.body}</p>
+                                <div className="text-[9px] text-pitch-400 mt-1">
+                                  {new Date(a.published_at || a.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
 
                 <div className="relative">
                   <button
