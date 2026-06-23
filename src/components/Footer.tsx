@@ -1,7 +1,10 @@
 import { Trophy } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { usePointSettings } from '../hooks/usePointSettings';
 
 export default function Footer() {
+  const { settings } = usePointSettings();
+
   return (
     <footer className="bg-pitch-950 border-t border-pitch-700 mt-auto">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -52,19 +55,27 @@ export default function Footer() {
             </h4>
             <ul className="space-y-1.5 text-sm text-pitch-300">
               <li className="flex items-center gap-2">
-                <span className="tag bg-success-800 text-success-300">3 pts</span>
+                <span className="tag bg-success-800 text-success-300">
+                  {settings.exact_score_points} {settings.exact_score_points === 1 ? 'pt' : 'pts'}
+                </span>
                 Exact scoreline
               </li>
               <li className="flex items-center gap-2">
-                <span className="tag bg-warn-800 text-warn-300">1 pt</span>
+                <span className="tag bg-warn-800 text-warn-300">
+                  {settings.correct_result_points} {settings.correct_result_points === 1 ? 'pt' : 'pts'}
+                </span>
                 Correct result
               </li>
               <li className="flex items-center gap-2">
-                <span className="tag bg-gold-900 text-gold-300">+5 pts</span>
+                <span className="tag bg-gold-900 text-gold-300">
+                  +{settings.streak_bonus_points} {settings.streak_bonus_points === 1 ? 'pt' : 'pts'}
+                </span>
                 Streak bonus
               </li>
               <li className="flex items-center gap-2">
-                <span className="tag bg-pitch-600 text-pitch-200">+10 pts</span>
+                <span className="tag bg-pitch-600 text-pitch-200">
+                  +{settings.daily_winner_points} {settings.daily_winner_points === 1 ? 'pt' : 'pts'}
+                </span>
                 Daily winner
               </li>
             </ul>

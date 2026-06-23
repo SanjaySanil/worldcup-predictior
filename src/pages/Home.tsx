@@ -4,6 +4,7 @@ import { Trophy, Lock, Info } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useWorldCupMatches, useWorldCupDates, useWorldCupCompetition } from '../hooks/useWorldCupMatches';
 import { useUserPredictions, useSavePredictions } from '../hooks/usePredictions';
+import { usePointSettings } from '../hooks/usePointSettings';
 import MatchCard from '../components/MatchCard';
 import DateNav from '../components/DateNav';
 import LiveLeaderboard from '../components/LiveLeaderboard';
@@ -53,6 +54,7 @@ export default function Home() {
 
   const [localPredictions, setLocalPredictions] = useState<Record<string, { home: number; away: number }>>({});
   const { savePredictions, saving } = useSavePredictions();
+  const { settings } = usePointSettings();
   const [toasts, setToasts] = useState<Array<{ id: string; message: string; type: ToastType }>>([]);
 
   const addToast = useCallback((message: string, type: ToastType) => {
@@ -141,9 +143,9 @@ export default function Home() {
             </span>
           </div>
           <p className="text-sm text-pitch-100">
-            <strong className="text-white">Exact scoreline = 3 pts</strong>
+            <strong className="text-white">Exact scoreline = {settings.exact_score_points} pts</strong>
             {' · '}
-            <strong className="text-white">Correct result = 1 pt</strong>
+            <strong className="text-white">Correct result = {settings.correct_result_points} {settings.correct_result_points === 1 ? 'pt' : 'pts'}</strong>
             {' · '}
             <span className="text-pitch-300">Most points by the final wins the amazing prize.</span>
           </p>
