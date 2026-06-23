@@ -126,7 +126,7 @@ export default function Home() {
       {/* Hero / Title */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-6 text-center">
         <h1 className="font-display text-3xl sm:text-4xl font-bold uppercase tracking-widest text-white mb-2">
-          Daily Score Predictor
+          DG Score Predictor
         </h1>
         <p className="text-pitch-200 text-sm sm:text-base max-w-xl mx-auto">
           Predict each day's scorelines before kickoff and climb the live leaderboard. Free to play.
