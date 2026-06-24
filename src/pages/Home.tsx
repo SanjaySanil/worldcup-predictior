@@ -8,6 +8,7 @@ import { usePointSettings } from '../hooks/usePointSettings';
 import MatchCard from '../components/MatchCard';
 import DateNav from '../components/DateNav';
 import LiveLeaderboard from '../components/LiveLeaderboard';
+import RecentPredictions from '../components/RecentPredictions';
 import { ToastContainer } from '../components/Toast';
 import type { ToastType } from '../components/Toast';
 import type { PredictionInput } from '../types';
@@ -255,7 +256,8 @@ export default function Home() {
           </div>
 
           {/* Leaderboard Sidebar */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 space-y-6">
+            {user && <RecentPredictions />}
             <LiveLeaderboard competitionId={activeCompetition?.id} />
           </div>
         </div>
