@@ -4,7 +4,7 @@ import { CheckCircle, XCircle, AlertCircle, Info, X } from 'lucide-react';
 export type ToastType = 'success' | 'error' | 'warning' | 'info';
 
 interface ToastProps {
-  message: string;
+  message: React.ReactNode;
   type: ToastType;
   onClose: () => void;
   duration?: number;
@@ -26,6 +26,7 @@ const styles = {
 
 export default function Toast({ message, type, onClose, duration = 4000 }: ToastProps) {
   useEffect(() => {
+    if (duration === Infinity || duration === 0) return;
     const timer = setTimeout(onClose, duration);
     return () => clearTimeout(timer);
   }, [onClose, duration]);
@@ -44,7 +45,7 @@ export default function Toast({ message, type, onClose, duration = 4000 }: Toast
 }
 
 interface ToastContainerProps {
-  toasts: Array<{ id: string; message: string; type: ToastType }>;
+  toasts: Array<{ id: string; message: React.ReactNode; type: ToastType; duration?: number }>;
   onClose: (id: string) => void;
 }
 
@@ -52,7 +53,7 @@ export function ToastContainer({ toasts, onClose }: ToastContainerProps) {
   return (
     <div className="fixed bottom-4 right-4 z-[100] flex flex-col gap-2 max-w-sm w-full">
       {toasts.map(t => (
-        <Toast key={t.id} message={t.message} type={t.type} onClose={() => onClose(t.id)} />
+        <Toast key={t.id} message={t.message} type={t.type} duration={t.duration} onClose={() => onClose(t.id)} />
       ))}
     </div>
   );

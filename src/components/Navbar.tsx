@@ -1,9 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { Trophy, User, Bell, Menu, X, LogOut, ChevronDown, BarChart3, History, Star } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import HowToPlayModal from './HowToPlayModal';
+import { ToastContainer } from './Toast';
+import type { ToastType } from './Toast';
 
 interface NavbarAnnouncement {
   id: string;
@@ -28,6 +30,18 @@ export default function Navbar() {
   const [announcements, setAnnouncements] = useState<NavbarAnnouncement[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
 
+  // Toasts state for announcements
+  const [toasts, setToasts] = useState<Array<{ id: string; message: React.ReactNode; type: ToastType; duration?: number }>>([]);
+
+  const addToast = useCallback((message: React.ReactNode, type: ToastType, duration?: number) => {
+    const id = Math.random().toString(36).substring(2, 9);
+    setToasts(prev => [...prev, { id, message, type, duration }]);
+  }, []);
+
+  const removeToast = useCallback((id: string) => {
+    setToasts(prev => prev.filter(t => t.id !== id));
+  }, []);
+
   useEffect(() => {
     const fetchAnnouncements = async () => {
       let query = supabase
@@ -46,6 +60,38 @@ export default function Navbar() {
         const announcementsData = data as any[];
         setAnnouncements(announcementsData);
         
+        // Show toasts for new announcements published in the last 24 hours
+        const lastSeenStr = localStorage.getItem('seen_announcements');
+        const seenIds: string[] = lastSeenStr ? JSON.parse(lastSeenStr) : [];
+        const newSeenIds = [...seenIds];
+        let hasNew = false;
+
+        const now = new Date();
+        const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+
+        announcementsData.forEach(a => {
+          const publishedAt = new Date(a.published_at || a.created_at);
+          if (!seenIds.includes(a.id)) {
+            // Only toast if it's within the last 24 hours
+            if (publishedAt >= oneDayAgo) {
+              addToast(
+                <div className="flex flex-col gap-0.5 pr-4 text-left">
+                  <div className="font-semibold text-white text-sm leading-snug">{a.title}</div>
+                  <p className="text-pitch-200 text-xs leading-normal">{a.body}</p>
+                </div>,
+                a.type as ToastType,
+                Infinity
+              );
+            }
+            newSeenIds.push(a.id);
+            hasNew = true;
+          }
+        });
+
+        if (hasNew) {
+          localStorage.setItem('seen_announcements', JSON.stringify(newSeenIds));
+        }
+
         // Calculate unread count
         const lastRead = localStorage.getItem('last_read_announcements');
         if (lastRead) {
@@ -70,7 +116,7 @@ export default function Navbar() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [profile]);
+  }, [profile, addToast]);
 
   const handleToggleNotifications = () => {
     setNotifOpen(!notifOpen);
@@ -349,6 +395,9 @@ export default function Navbar() {
 
       {/* How To Play Modal */}
       <HowToPlayModal isOpen={howToPlayOpen} onClose={() => setHowToPlayOpen(false)} />
+
+      {/* Announcements Toasts */}
+      <ToastContainer toasts={toasts} onClose={removeToast} />
     </>
   );
 }
