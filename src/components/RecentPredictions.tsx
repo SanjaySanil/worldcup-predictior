@@ -69,6 +69,27 @@ export default function RecentPredictions() {
     };
 
     loadRecentPredictions();
+
+    // Subscribe to realtime changes in predictions for the current user
+    const channel = supabase
+      .channel(`recent-predictions-${user.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'predictions',
+          filter: `user_id=eq.${user.id}`,
+        },
+        () => {
+          loadRecentPredictions();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [user]);
 
   if (!user) return null;
