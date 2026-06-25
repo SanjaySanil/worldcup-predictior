@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Trophy, Lock, Info } from 'lucide-react';
+import { Trophy, Lock, Crown } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useWorldCupMatches, useWorldCupDates, useWorldCupCompetition } from '../hooks/useWorldCupMatches';
 import { useUserPredictions, useSavePredictions } from '../hooks/usePredictions';
-import { usePointSettings } from '../hooks/usePointSettings';
+
+import { supabase } from '../lib/supabase';
 import MatchCard from '../components/MatchCard';
 import DateNav from '../components/DateNav';
 import LiveLeaderboard from '../components/LiveLeaderboard';
@@ -55,8 +56,44 @@ export default function Home() {
 
   const [localPredictions, setLocalPredictions] = useState<Record<string, { home: number; away: number }>>({});
   const { savePredictions, saving } = useSavePredictions();
-  const { settings } = usePointSettings();
+
   const [toasts, setToasts] = useState<Array<{ id: string; message: string; type: ToastType }>>([]);
+  const [topScorer, setTopScorer] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchTopScorer = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('leaderboard')
+          .select('*, profiles(*)')
+          .order('total_points', { ascending: false })
+          .order('exact_scores', { ascending: false })
+          .order('accuracy', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (data && !error) {
+          setTopScorer(data);
+        }
+      } catch (err) {
+        console.error('Error fetching top scorer:', err);
+      }
+    };
+
+    fetchTopScorer();
+
+    // Subscribe to realtime changes in leaderboard to keep top scorer updated
+    const channel = supabase
+      .channel('top-scorer-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'leaderboard' }, () => {
+        fetchTopScorer();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   const addToast = useCallback((message: string, type: ToastType) => {
     const id = Math.random().toString(36).slice(2);
@@ -135,22 +172,60 @@ export default function Home() {
           Predict each day's scorelines before kickoff and climb the live leaderboard. Free to play.
         </p>
 
-        {/* Points Info Banner */}
-        <div className="mt-6 max-w-2xl mx-auto border border-gold-subtle rounded-lg px-5 py-4 bg-pitch-800">
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <Info className="w-4 h-4 text-gold-400" />
-            <span className="font-display font-bold uppercase tracking-widest text-sm text-gold-400">
-              How Points Work
-            </span>
+
+        {/* Top Scorer Card */}
+        {topScorer && (
+          <div className="mt-6 max-w-2xl mx-auto border border-gold-500/20 hover:border-gold-500/50 rounded-xl bg-pitch-800/60 backdrop-blur-md shadow-gold hover:shadow-gold-lg transition-all duration-300 transform hover:-translate-y-0.5 flex flex-col sm:flex-row items-center justify-between p-4 px-6 gap-4 animate-fade-in group">
+            {/* Left: Laurel Wreath & User details */}
+            <div className="flex items-center gap-4">
+              <div className="relative flex items-center justify-center w-14 h-14 select-none">
+                {/* Laurel Wreath SVG */}
+                <svg 
+                  className="absolute w-14 h-14 text-gold-500/80 group-hover:scale-110 transition-transform duration-500" 
+                  viewBox="0 0 100 100" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  strokeWidth="4.5"
+                >
+                  {/* Left branch */}
+                  <path d="M 35 75 C 20 60, 20 40, 35 25" strokeLinecap="round" />
+                  <path d="M 35 72 L 28 68 M 28 58 L 21 56 M 25 46 L 18 44 M 29 34 L 23 30" strokeLinecap="round" />
+                  {/* Right branch */}
+                  <path d="M 65 75 C 80 60, 80 40, 65 25" strokeLinecap="round" />
+                  <path d="M 65 72 L 72 68 M 72 58 L 79 56 M 75 46 L 82 44 M 71 34 L 77 30" strokeLinecap="round" />
+                </svg>
+                {/* Crown Icon */}
+                <Crown className="w-6 h-6 text-gold-400 absolute animate-pulse" />
+              </div>
+              <div className="text-left">
+                <div className="text-white font-display font-bold text-lg uppercase tracking-wider group-hover:text-gold-300 transition-colors duration-300">
+                  {topScorer.profiles?.username || '---'}
+                </div>
+                <div className="text-xs text-pitch-300 font-semibold mt-0.5">
+                  <span className="text-gold-400 font-black font-display text-sm">{topScorer.total_points || 0}</span> POINTS
+                </div>
+              </div>
+            </div>
+
+            {/* Center: Badge */}
+            <div className="flex items-center gap-2 bg-gold-500/10 px-4 py-1.5 rounded-full border border-gold-500/20 group-hover:bg-gold-500/20 transition-all duration-300 select-none">
+              <Trophy className="w-4 h-4 text-gold-400 animate-bounce" />
+              <span className="font-display font-bold uppercase tracking-widest text-xs text-gold-400">
+                Today's Top Scorer
+              </span>
+            </div>
+
+            {/* Right: Accuracy */}
+            <div className="text-center sm:text-right">
+              <div className="text-[10px] text-pitch-400 font-bold uppercase tracking-wider select-none">
+                Accuracy
+              </div>
+              <div className="text-xl font-black text-success-400 font-display mt-0.5 group-hover:text-success-300 transition-colors duration-300 select-none">
+                {topScorer.accuracy != null ? `${Math.round(topScorer.accuracy)}%` : '0%'}
+              </div>
+            </div>
           </div>
-          <p className="text-sm text-pitch-100">
-            <strong className="text-white">Exact scoreline = {settings.exact_score_points} pts</strong>
-            {' · '}
-            <strong className="text-white">Correct result = {settings.correct_result_points} {settings.correct_result_points === 1 ? 'pt' : 'pts'}</strong>
-            {' · '}
-            <span className="text-pitch-300">Most points by the final wins the amazing prize.</span>
-          </p>
-        </div>
+        )}
 
         {/* Auth prompt */}
         {!user && (
