@@ -39,6 +39,7 @@ export interface PredictionInput {
   matchId: string;
   homeScore: number;
   awayScore: number;
+  predictedPenaltyWinner?: 'home' | 'away' | null;
 }
 
 export interface MatchFilterOptions {

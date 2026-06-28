@@ -83,6 +83,49 @@ const FLAG_MAP: Record<string, string> = {
   'Poland': '🇵🇱',
 };
 
+/**
+ * Confirmed Round of 32 team overrides.
+ * The TheStatsAPI fixtures.json still uses placeholder names (e.g. "Group A runners-up")
+ * for the knockout stage. This map patches them with the real qualified teams.
+ * Keys are matchNumber values from the API. Update this as later rounds get confirmed.
+ *
+ * Round of 32 confirmed (group stage concluded ~June 28 2026):
+ */
+const KNOCKOUT_TEAM_OVERRIDES: Record<number, { homeTeam: string; awayTeam: string }> = {
+  // Match 73 – Jun 28 19:00 UTC → Jun 29 00:30 IST
+  73: { homeTeam: 'South Africa', awayTeam: 'Canada' },
+  // Match 76 – Jun 29 17:00 UTC → Jun 29 22:30 IST  ← Brazil vs Japan (Tomorrow 10:30 PM IST)
+  76: { homeTeam: 'Brazil',       awayTeam: 'Japan' },
+  // Match 74 – Jun 29 20:30 UTC → Jun 30 02:00 IST  ← Germany vs Paraguay (Tue 2:00 AM IST)
+  74: { homeTeam: 'Germany',      awayTeam: 'Paraguay' },
+  // Match 75 – Jun 30 01:00 UTC → Jun 30 06:30 IST  ← Netherlands vs Morocco (Tue 6:30 AM IST)
+  75: { homeTeam: 'Netherlands',  awayTeam: 'Morocco' },
+  // Match 78 – Jun 30 17:00 UTC → Jun 30 22:30 IST  ← Côte d'Ivoire vs Norway (Tue 10:30 PM IST)
+  78: { homeTeam: "Cote d'Ivoire", awayTeam: 'Norway' },
+  // Match 77 – Jun 30 21:00 UTC → Jul 01 02:30 IST  ← France vs Sweden (Wed 2:30 AM IST)
+  77: { homeTeam: 'France',       awayTeam: 'Sweden' },
+  // Match 79 – Jul 01 01:00 UTC → Jul 01 06:30 IST  ← Mexico vs Ecuador (Wed 6:30 AM IST)
+  79: { homeTeam: 'Mexico',       awayTeam: 'Ecuador' },
+  // Match 80 – Jul 01 16:00 UTC → Jul 01 21:30 IST  ← England vs Congo DR (Wed 9:30 PM IST)
+  80: { homeTeam: 'England',      awayTeam: 'Congo DR' },
+  // Match 82 – Jul 01 20:00 UTC → Jul 02 01:30 IST  ← Belgium vs Senegal (Thu 1:30 AM IST)
+  82: { homeTeam: 'Belgium',      awayTeam: 'Senegal' },
+  // Match 81 – Jul 02 00:00 UTC → Jul 02 05:30 IST  ← USA vs Bosnia (Thu 5:30 AM IST)
+  81: { homeTeam: 'United States', awayTeam: 'Bosnia and Herzegovina' },
+  // Match 84 – Jul 02 19:00 UTC → Jul 03 00:30 IST  ← Spain vs Austria (Fri 12:30 AM IST)
+  84: { homeTeam: 'Spain',        awayTeam: 'Austria' },
+  // Match 83 – Jul 02 23:00 UTC → Jul 03 04:30 IST  ← Portugal vs Croatia (Fri 4:30 AM IST)
+  83: { homeTeam: 'Portugal',     awayTeam: 'Croatia' },
+  // Match 85 – Jul 03 03:00 UTC → Jul 03 08:30 IST  ← Switzerland vs Algeria (Fri 8:30 AM IST)
+  85: { homeTeam: 'Switzerland',  awayTeam: 'Algeria' },
+  // Match 88 – Jul 03 18:00 UTC → Jul 03 23:30 IST  ← Australia vs Egypt (Fri 11:30 PM IST)
+  88: { homeTeam: 'Australia',    awayTeam: 'Egypt' },
+  // Match 86 – Jul 03 22:00 UTC → Jul 04 03:30 IST  ← Argentina vs Cabo Verde (Sat 3:30 AM IST)
+  86: { homeTeam: 'Argentina',    awayTeam: 'Cabo Verde' },
+  // Match 87 – Jul 04 01:30 UTC → Jul 04 07:00 IST  ← Colombia vs Ghana (Sat 7:00 AM IST)
+  87: { homeTeam: 'Colombia',     awayTeam: 'Ghana' },
+};
+
 export interface ApiFixture {
   matchNumber: number;
   date: string;        // local match date (host city TZ) — NOT used for display
@@ -148,6 +191,11 @@ function fixtureToMatch(f: ApiFixture): MatchWithTeams {
     status,
     home_score: null,
     away_score: null,
+    // Knockout matches have no group letter in the API data (group is undefined).
+    // All Round of 32, QF, SF and Final matches are automatically flagged so
+    // the penalty-winner picker appears on the user side.
+    is_knockout: !f.group,
+    penalty_winner: null,
     result_published: false,
     result_published_at: null,
     created_by: null,
@@ -170,7 +218,18 @@ export async function fetchWorldCupFixtures(): Promise<{
   if (!res.ok) throw new Error(`Fixtures API returned ${res.status}`);
 
   const json = await res.json();
-  const fixtures: ApiFixture[] = json.fixtures ?? [];
+  const rawFixtures: ApiFixture[] = json.fixtures ?? [];
+
+  // Apply confirmed knockout team overrides — the upstream API still uses
+  // placeholder names (e.g. "Group A runners-up") for knockout matches.
+  // KNOCKOUT_TEAM_OVERRIDES patches them with the real qualified teams.
+  const fixtures = rawFixtures.map(f => {
+    const override = KNOCKOUT_TEAM_OVERRIDES[f.matchNumber];
+    if (override) {
+      return { ...f, homeTeam: override.homeTeam, awayTeam: override.awayTeam };
+    }
+    return f;
+  });
 
   const matches = fixtures.map(fixtureToMatch);
 

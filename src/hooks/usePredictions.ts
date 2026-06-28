@@ -53,6 +53,7 @@ export function useSavePredictions() {
         match_id: p.matchId,
         predicted_home_score: p.homeScore,
         predicted_away_score: p.awayScore,
+        predicted_penalty_winner: p.predictedPenaltyWinner ?? null,
         submitted_at: now,
       }));
 

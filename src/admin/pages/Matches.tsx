@@ -23,12 +23,22 @@ function PublishResultModal({
   const { user } = useAuth();
   const [homeScore, setHomeScore] = useState(match.home_score?.toString() ?? '');
   const [awayScore, setAwayScore] = useState(match.away_score?.toString() ?? '');
+  const [isKnockout, setIsKnockout] = useState<boolean>(match.is_knockout ?? false);
+  const [penaltyWinner, setPenaltyWinner] = useState<'home' | 'away' | null>(match.penalty_winner ?? null);
   const [publishing, setPublishing] = useState(false);
   const [error, setError] = useState('');
+
+  const homeScoreNum = parseInt(homeScore);
+  const awayScoreNum = parseInt(awayScore);
+  const scoresAreEqual = !isNaN(homeScoreNum) && !isNaN(awayScoreNum) && homeScoreNum === awayScoreNum;
 
   const handlePublish = async () => {
     if (homeScore === '' || awayScore === '') {
       setError('Please enter both scores');
+      return;
+    }
+    if (isKnockout && scoresAreEqual && !penaltyWinner) {
+      setError('Scores are equal — please select the penalty shootout winner');
       return;
     }
     setPublishing(true);
@@ -39,6 +49,8 @@ function PublishResultModal({
       match_id: match.id,
       home_score: parseInt(homeScore),
       away_score: parseInt(awayScore),
+      is_knockout: isKnockout,
+      penalty_winner: isKnockout && scoresAreEqual ? penaltyWinner : null,
       status: 'finished',
       result_published: true,
       result_published_at: new Date().toISOString(),
@@ -52,7 +64,12 @@ function PublishResultModal({
       action: 'publish_result',
       entity_type: 'match',
       entity_id: match.id,
-      new_data: { home_score: parseInt(homeScore), away_score: parseInt(awayScore) },
+      new_data: {
+        home_score: parseInt(homeScore),
+        away_score: parseInt(awayScore),
+        is_knockout: isKnockout,
+        penalty_winner: penaltyWinner,
+      },
     }).then(() => {});
 
     setPublishing(false);
@@ -86,6 +103,7 @@ function PublishResultModal({
             </div>
           )}
 
+          {/* Score inputs */}
           <div className="flex items-center justify-center gap-6">
             <div className="text-center">
               <label className="form-label text-center">{match.home_team?.name}</label>
@@ -108,11 +126,73 @@ function PublishResultModal({
             </div>
           </div>
 
+          {/* Knockout toggle */}
+          <div className="flex items-center justify-between bg-pitch-700 border border-pitch-600 rounded-lg px-4 py-3">
+            <div>
+              <div className="text-white text-sm font-semibold">Knockout Match</div>
+              <div className="text-pitch-400 text-xs mt-0.5">Enable if this match can go to penalty shootout</div>
+            </div>
+            <button
+              onClick={() => { setIsKnockout(v => !v); setPenaltyWinner(null); }}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                isKnockout ? 'bg-gold-500' : 'bg-pitch-500'
+              }`}
+            >
+              <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                isKnockout ? 'translate-x-6' : 'translate-x-1'
+              }`} />
+            </button>
+          </div>
+
+          {/* Penalty winner selector — shown whenever knockout is enabled */}
+          {isKnockout && (
+            <div className="rounded-xl border border-gold-500/40 bg-pitch-700/60 px-4 py-3 space-y-2">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-xs font-black uppercase tracking-widest text-gold-400">🏆 Penalty Shootout Winner</span>
+              </div>
+              <p className="text-[11px] text-pitch-400 mb-2">
+                Who wins on penalties? Only applied if final score is a draw · <span className="text-gold-400 font-semibold">+6 pts</span> for correct picks
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setPenaltyWinner(penaltyWinner === 'home' ? null : 'home')}
+                  className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg border text-sm font-bold transition-all ${
+                    penaltyWinner === 'home'
+                      ? 'bg-gold-500 border-gold-400 text-pitch-900'
+                      : 'border-pitch-500 text-pitch-200 hover:border-gold-500/60 hover:text-white'
+                  }`}
+                >
+                  <span>{match.home_team?.flag_emoji}</span>
+                  <span>{match.home_team?.name || 'Home'}</span>
+                </button>
+                <button
+                  onClick={() => setPenaltyWinner(penaltyWinner === 'away' ? null : 'away')}
+                  className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg border text-sm font-bold transition-all ${
+                    penaltyWinner === 'away'
+                      ? 'bg-gold-500 border-gold-400 text-pitch-900'
+                      : 'border-pitch-500 text-pitch-200 hover:border-gold-500/60 hover:text-white'
+                  }`}
+                >
+                  <span>{match.away_team?.flag_emoji}</span>
+                  <span>{match.away_team?.name || 'Away'}</span>
+                </button>
+              </div>
+              {penaltyWinner && (
+                <p className="text-xs text-success-400 text-center font-semibold">
+                  ✓ {penaltyWinner === 'home' ? match.home_team?.name : match.away_team?.name} wins on penalties
+                </p>
+              )}
+            </div>
+          )}
+
           <div className="bg-pitch-700 border border-pitch-600 rounded-lg p-4 text-sm text-pitch-300">
             <strong className="text-white">This will:</strong>
             <ul className="mt-2 space-y-1 list-disc list-inside">
               <li>Set the final score</li>
               <li>Calculate points for all predictions</li>
+              {isKnockout && penaltyWinner && (
+                <li className="text-gold-400">Award +6 pts for correct penalty winner picks (if score is a draw)</li>
+              )}
               <li>Update the leaderboard</li>
             </ul>
           </div>
@@ -167,11 +247,14 @@ export default function Matches() {
       overlay[id] = {
         home_score: r.home_score,
         away_score: r.away_score,
+        is_knockout: r.is_knockout,
+        penalty_winner: r.penalty_winner as 'home' | 'away' | null,
         status: r.status as MatchWithTeams['status'],
         result_published: r.result_published,
         result_published_at: r.result_published_at,
       };
     });
+    setDbOverlay(overlay);
   };
 
   useEffect(() => {

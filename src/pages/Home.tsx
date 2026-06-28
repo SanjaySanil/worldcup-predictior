@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Trophy, Lock, Crown } from 'lucide-react';
+import { Trophy, Crown } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useWorldCupMatches, useWorldCupDates, useWorldCupCompetition } from '../hooks/useWorldCupMatches';
 import { useUserPredictions, useSavePredictions } from '../hooks/usePredictions';
@@ -30,7 +30,7 @@ function isMatchLocked(lockTime: string) {
 }
 
 export default function Home() {
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   const { competitions } = useWorldCupCompetition();
@@ -54,7 +54,7 @@ export default function Home() {
     matchIds
   );
 
-  const [localPredictions, setLocalPredictions] = useState<Record<string, { home: number; away: number }>>({});
+  const [localPredictions, setLocalPredictions] = useState<Record<string, { home: number; away: number; penaltyWinner: 'home' | 'away' | null }>>({});
   const { savePredictions, saving } = useSavePredictions();
 
   const [toasts, setToasts] = useState<Array<{ id: string; message: string; type: ToastType }>>([]);
@@ -105,12 +105,13 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    const initial: Record<string, { home: number; away: number }> = {};
+    const initial: Record<string, { home: number; away: number; penaltyWinner: 'home' | 'away' | null }> = {};
     matches.forEach(m => {
       const saved = savedPredictions[m.id];
       initial[m.id] = {
         home: saved?.predicted_home_score ?? 0,
         away: saved?.predicted_away_score ?? 0,
+        penaltyWinner: (saved?.predicted_penalty_winner as 'home' | 'away' | null) ?? null,
       };
     });
     setLocalPredictions(initial);
@@ -135,6 +136,7 @@ export default function Home() {
         matchId,
         homeScore: scores.home,
         awayScore: scores.away,
+        predictedPenaltyWinner: scores.penaltyWinner,
       }));
 
     if (!inputs.length) {
@@ -158,9 +160,6 @@ export default function Home() {
       month: 'short',
     }).toUpperCase();
   };
-
-  const activePredictionCount = Object.keys(localPredictions).length;
-
   return (
     <div className="min-h-screen bg-pitch-900">
       {/* Hero / Title */}
@@ -284,18 +283,25 @@ export default function Home() {
                         match={match}
                         homeScore={localPredictions[match.id]?.home ?? 0}
                         awayScore={localPredictions[match.id]?.away ?? 0}
+                        penaltyWinner={localPredictions[match.id]?.penaltyWinner ?? null}
                         onHomeChange={v => {
-                          if (locked) return; // block locked matches
+                          if (locked) return;
                           setLocalPredictions(prev => ({
                             ...prev,
                             [match.id]: { ...prev[match.id], home: v },
                           }));
                         }}
                         onAwayChange={v => {
-                          if (locked) return; // block locked matches
+                          if (locked) return;
                           setLocalPredictions(prev => ({
                             ...prev,
                             [match.id]: { ...prev[match.id], away: v },
+                          }));
+                        }}
+                        onPenaltyWinnerChange={winner => {
+                          setLocalPredictions(prev => ({
+                            ...prev,
+                            [match.id]: { ...prev[match.id], penaltyWinner: winner },
                           }));
                         }}
                         isAuthenticated={!!user}

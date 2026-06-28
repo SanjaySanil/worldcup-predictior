@@ -24,6 +24,8 @@ export interface MatchResult {
   match_id: string;
   home_score: number;
   away_score: number;
+  is_knockout: boolean;
+  penalty_winner: 'home' | 'away' | null;
   status: string;
   result_published: boolean;
   result_published_at: string | null;

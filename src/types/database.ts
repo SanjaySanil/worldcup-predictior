@@ -142,6 +142,8 @@ export interface Database {
           status: 'scheduled' | 'live' | 'finished' | 'postponed' | 'cancelled';
           home_score: number | null;
           away_score: number | null;
+          is_knockout: boolean;
+          penalty_winner: 'home' | 'away' | null;
           result_published: boolean;
           result_published_at: string | null;
           created_by: string | null;
@@ -161,6 +163,8 @@ export interface Database {
           status?: 'scheduled' | 'live' | 'finished' | 'postponed' | 'cancelled';
           home_score?: number | null;
           away_score?: number | null;
+          is_knockout?: boolean;
+          penalty_winner?: 'home' | 'away' | null;
           result_published?: boolean;
           result_published_at?: string | null;
           created_by?: string | null;
@@ -176,6 +180,7 @@ export interface Database {
           match_id: string;
           predicted_home_score: number;
           predicted_away_score: number;
+          predicted_penalty_winner: 'home' | 'away' | null;
           points_earned: number;
           is_correct_result: boolean | null;
           is_exact_score: boolean | null;
@@ -187,6 +192,7 @@ export interface Database {
           match_id: string;
           predicted_home_score: number;
           predicted_away_score: number;
+          predicted_penalty_winner?: 'home' | 'away' | null;
           points_earned?: number;
           is_correct_result?: boolean | null;
           is_exact_score?: boolean | null;
@@ -202,6 +208,7 @@ export interface Database {
           total_points: number;
           exact_scores: number;
           correct_results: number;
+          penalty_correct_picks: number;
           matches_predicted: number;
           current_streak: number;
           longest_streak: number;
@@ -216,6 +223,7 @@ export interface Database {
           total_points?: number;
           exact_scores?: number;
           correct_results?: number;
+          penalty_correct_picks?: number;
           matches_predicted?: number;
           current_streak?: number;
           longest_streak?: number;
