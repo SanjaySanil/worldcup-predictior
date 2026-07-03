@@ -124,6 +124,22 @@ const KNOCKOUT_TEAM_OVERRIDES: Record<number, { homeTeam: string; awayTeam: stri
   86: { homeTeam: 'Argentina',    awayTeam: 'Cabo Verde' },
   // Match 87 – Jul 04 01:30 UTC → Jul 04 07:00 IST  ← Colombia vs Ghana (Sat 7:00 AM IST)
   87: { homeTeam: 'Colombia',     awayTeam: 'Ghana' },
+
+  // Round of 16 Overrides
+  // Match 89 – Jul 04 21:00 UTC → Jul 05 02:30 IST  ← Paraguay vs France (Sun 2:30 AM IST)
+  89: { homeTeam: 'Paraguay',      awayTeam: 'France' },
+  // Match 90 – Jul 04 17:00 UTC → Jul 04 22:30 IST  ← Canada vs Morocco (Sat 10:30 PM IST)
+  90: { homeTeam: 'Canada',        awayTeam: 'Morocco' },
+  // Match 91 – Jul 05 20:00 UTC → Jul 06 01:30 IST  ← Brazil vs Norway (Mon 1:30 AM IST)
+  91: { homeTeam: 'Brazil',        awayTeam: 'Norway' },
+  // Match 92 – Jul 06 00:00 UTC → Jul 06 05:30 IST  ← Mexico vs England (Mon 5:30 AM IST)
+  92: { homeTeam: 'Mexico',        awayTeam: 'England' },
+  // Match 93 – Jul 06 19:00 UTC → Jul 07 00:30 IST  ← Portugal vs Spain (Tue 12:30 AM IST)
+  93: { homeTeam: 'Portugal',      awayTeam: 'Spain' },
+  // Match 94 – Jul 07 00:00 UTC → Jul 07 05:30 IST  ← USA vs Belgium (Tue 5:30 AM IST)
+  94: { homeTeam: 'United States', awayTeam: 'Belgium' },
+  // Match 96 – Jul 07 20:00 UTC → Jul 08 01:30 IST  ← Switzerland vs Winner Match 87 (Wed 1:30 AM IST)
+  96: { homeTeam: 'Switzerland',   awayTeam: 'Winner Match 87' },
 };
 
 export interface ApiFixture {

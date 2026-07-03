@@ -86,7 +86,7 @@ BEGIN
 
   -- Update the password hash in Supabase's auth.users table using pgcrypto's crypt
   UPDATE auth.users
-  SET encrypted_password = crypt(p_new_password, gen_salt('bf', 10))
+  SET encrypted_password = extensions.crypt(p_new_password, extensions.gen_salt('bf', 10))
   WHERE id = v_user_id;
 
   -- Clear the reset state on success
