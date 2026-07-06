@@ -138,8 +138,16 @@ const KNOCKOUT_TEAM_OVERRIDES: Record<number, { homeTeam: string; awayTeam: stri
   93: { homeTeam: 'Portugal',      awayTeam: 'Spain' },
   // Match 94 – Jul 07 00:00 UTC → Jul 07 05:30 IST  ← USA vs Belgium (Tue 5:30 AM IST)
   94: { homeTeam: 'United States', awayTeam: 'Belgium' },
-  // Match 96 – Jul 07 20:00 UTC → Jul 08 01:30 IST  ← Switzerland vs Winner Match 87 (Wed 1:30 AM IST)
-  96: { homeTeam: 'Switzerland',   awayTeam: 'Winner Match 87' },
+  // Match 95 – Jul 07 16:00 UTC → Jul 07 21:30 IST  ← Argentina vs Egypt (Tue 9:30 PM IST)
+  95: { homeTeam: 'Argentina',     awayTeam: 'Egypt' },
+  // Match 96 – Jul 07 20:00 UTC → Jul 08 01:30 IST  ← Switzerland vs Colombia (Wed 1:30 AM IST)
+  96: { homeTeam: 'Switzerland',   awayTeam: 'Colombia' },
+
+  // Quarter-finals Overrides
+  // Match 97 – Jul 09 20:00 UTC → Jul 10 01:30 IST  ← France vs Morocco (Fri 1:30 AM IST)
+  97: { homeTeam: 'France',        awayTeam: 'Morocco' },
+  // Match 99 – Jul 11 21:00 UTC → Jul 12 02:30 IST  ← Norway vs England (Sun 2:30 AM IST)
+  99: { homeTeam: 'Norway',        awayTeam: 'England' },
 };
 
 export interface ApiFixture {
