@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Trophy, Crown } from 'lucide-react';
+import { Trophy, Crown, X } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useWorldCupMatches, useWorldCupDates, useWorldCupCompetition } from '../hooks/useWorldCupMatches';
 import { useUserPredictions, useSavePredictions } from '../hooks/usePredictions';
@@ -59,6 +59,58 @@ export default function Home() {
 
   const [toasts, setToasts] = useState<Array<{ id: string; message: string; type: ToastType }>>([]);
   const [topScorer, setTopScorer] = useState<any>(null);
+  const [todaysPredictions, setTodaysPredictions] = useState<any[]>([]);
+  const [predictionsLoading, setPredictionsLoading] = useState(false);
+  const [showAllModal, setShowAllModal] = useState(false);
+
+  const finishedMatches = matches.filter(m => m.status === 'finished' || m.result_published);
+  const finishedMatchIdsStr = finishedMatches.map(m => m.id).sort().join(',');
+
+  const fetchTodaysPredictions = useCallback(async () => {
+    if (!finishedMatchIdsStr) {
+      setTodaysPredictions([]);
+      return;
+    }
+    setPredictionsLoading(true);
+    try {
+      const matchIds = finishedMatchIdsStr.split(',');
+      const { data, error } = await supabase
+        .from('predictions')
+        .select('*, profiles(username, display_name)')
+        .in('match_id', matchIds)
+        .order('points_earned', { ascending: false });
+
+      if (data && !error) {
+        setTodaysPredictions(data);
+      }
+    } catch (err) {
+      console.error("Error fetching today's predictions:", err);
+    } finally {
+      setPredictionsLoading(false);
+    }
+  }, [finishedMatchIdsStr]);
+
+  useEffect(() => {
+    fetchTodaysPredictions();
+
+    if (!finishedMatchIdsStr) return;
+
+    const channel = supabase
+      .channel('todays-predictions-realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'predictions' },
+        () => {
+          fetchTodaysPredictions();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [fetchTodaysPredictions, finishedMatchIdsStr]);
+
 
   useEffect(() => {
     const fetchTopScorer = async () => {
@@ -225,6 +277,158 @@ export default function Home() {
             </div>
           </div>
         )}
+
+        {/* Today's Prediction Top Scores Card */}
+        {todaysPredictions.length > 0 && (
+          <div className="mt-6 max-w-2xl mx-auto border border-pitch-700/80 rounded-xl bg-pitch-800/40 backdrop-blur-md p-5 text-left shadow-lg animate-fade-in flex flex-col">
+            {/* Card Header */}
+            <div className="flex items-center justify-between mb-4 border-b border-pitch-700/40 pb-2">
+              <div className="flex items-center gap-2 select-none">
+                <Trophy className="w-4 h-4 text-gold-400" />
+                <h3 className="font-display font-bold uppercase tracking-wider text-xs text-pitch-200">
+                  Today's Prediction Scores
+                </h3>
+              </div>
+              <button
+                onClick={() => setShowAllModal(true)}
+                className="text-[11px] font-display font-bold uppercase tracking-widest text-gold-400 hover:text-gold-300 transition-colors select-none"
+              >
+                View All
+              </button>
+            </div>
+
+            {/* Scrollable Container */}
+            <div className="max-h-56 overflow-y-auto pr-1 space-y-2 scrollbar-thin scrollbar-thumb-pitch-700">
+              {todaysPredictions.slice(0, 10).map((pred, index) => {
+                const match = matches.find(m => m.id === pred.match_id);
+                const homeFlag = match?.home_team?.flag_emoji || '🏳️';
+                const awayFlag = match?.away_team?.flag_emoji || '🏳️';
+                const points = pred.points_earned ?? 0;
+
+                let badgeColor = "bg-pitch-700 text-pitch-300";
+                if (pred.is_exact_score) badgeColor = "bg-success-900/60 text-success-300 border border-success-700/30";
+                else if (pred.is_correct_result) badgeColor = "bg-warn-900/60 text-warn-300 border border-warn-700/30";
+
+                return (
+                  <div key={pred.id} className="flex items-center justify-between p-2.5 rounded-lg bg-pitch-900/40 hover:bg-pitch-900/80 transition-colors text-xs gap-3">
+                    {/* Rank & Username */}
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <span className="font-mono font-bold text-pitch-400 w-5">#{index + 1}</span>
+                      <span className="font-semibold text-white truncate">
+                        {pred.profiles?.username || '---'}
+                      </span>
+                    </div>
+
+                    {/* Match & Prediction Info */}
+                    <div className="flex items-center gap-2 flex-shrink-0 text-pitch-300">
+                      <div className="flex items-center gap-1 select-none">
+                        <span>{homeFlag}</span>
+                        <span className="font-mono text-pitch-400 font-bold px-1">{pred.predicted_home_score}-{pred.predicted_away_score}</span>
+                        <span>{awayFlag}</span>
+                      </div>
+                      <span className="text-pitch-500 select-none">|</span>
+                      <div className="text-[10px] bg-pitch-850 px-1.5 py-0.5 rounded text-pitch-400 font-mono select-none">
+                        FT: {match?.home_score ?? 0}-{match?.away_score ?? 0}
+                      </div>
+                    </div>
+
+                    {/* Points Badge */}
+                    <div className="flex-shrink-0 select-none">
+                      <span className={`px-2 py-0.5 rounded-full font-bold font-display text-[10px] uppercase tracking-wider ${badgeColor}`}>
+                        +{points} pts
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+              {todaysPredictions.length > 10 && (
+                <div className="text-center py-2 border-t border-pitch-800/30 mt-2">
+                  <button
+                    onClick={() => setShowAllModal(true)}
+                    className="text-xs text-pitch-400 hover:text-gold-400 transition-colors font-medium select-none"
+                  >
+                    And {todaysPredictions.length - 10} more... Click View All
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* View All Modal */}
+        {showAllModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-pitch-950/85 backdrop-blur-sm animate-fade-in">
+            <div className="relative w-full max-w-2xl bg-pitch-900 border border-pitch-700/80 rounded-xl shadow-2xl flex flex-col max-h-[80vh] overflow-hidden">
+              {/* Modal Header */}
+              <div className="flex items-center justify-between p-4 border-b border-pitch-800 select-none">
+                <div className="flex items-center gap-2">
+                  <Trophy className="w-5 h-5 text-gold-400" />
+                  <h2 className="font-display font-bold uppercase tracking-wider text-sm text-white">
+                    Today's Prediction Leaderboard
+                  </h2>
+                </div>
+                <button
+                  onClick={() => setShowAllModal(false)}
+                  className="p-1 rounded-lg hover:bg-pitch-850 text-pitch-400 hover:text-white transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Modal Body / Scrollable Table */}
+              <div className="flex-1 overflow-y-auto p-4">
+                <table className="w-full text-left border-collapse text-xs sm:text-sm">
+                  <thead>
+                    <tr className="border-b border-pitch-800 text-pitch-400 uppercase font-display text-[10px] tracking-wider select-none">
+                      <th className="py-2.5 px-3">Rank</th>
+                      <th className="py-2.5 px-3">User</th>
+                      <th className="py-2.5 px-3 text-center">Prediction</th>
+                      <th className="py-2.5 px-3 text-center">Actual Score</th>
+                      <th className="py-2.5 px-3 text-right">Points</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-pitch-800/40 text-pitch-300">
+                    {todaysPredictions.map((pred, index) => {
+                      const match = matches.find(m => m.id === pred.match_id);
+                      const homeFlag = match?.home_team?.flag_emoji || '🏳️';
+                      const awayFlag = match?.away_team?.flag_emoji || '🏳️';
+                      const points = pred.points_earned ?? 0;
+
+                      let badgeColor = "bg-pitch-700 text-pitch-300";
+                      if (pred.is_exact_score) badgeColor = "bg-success-900/60 text-success-300 border border-success-700/30";
+                      else if (pred.is_correct_result) badgeColor = "bg-warn-900/60 text-warn-300 border border-warn-700/30";
+
+                      return (
+                        <tr key={pred.id} className="hover:bg-pitch-800/20 transition-colors">
+                          <td className="py-3 px-3 font-mono font-bold text-pitch-400">#{index + 1}</td>
+                          <td className="py-3 px-3 font-semibold text-white">
+                            {pred.profiles?.username || '---'}
+                          </td>
+                          <td className="py-3 px-3 text-center">
+                            <div className="inline-flex items-center gap-1 select-none">
+                              <span>{homeFlag}</span>
+                              <span className="font-mono text-pitch-200 font-bold px-1">{pred.predicted_home_score} - {pred.predicted_away_score}</span>
+                              <span>{awayFlag}</span>
+                            </div>
+                          </td>
+                          <td className="py-3 px-3 text-center font-mono font-bold text-pitch-400 select-none">
+                            {match?.home_score ?? 0} - {match?.away_score ?? 0}
+                          </td>
+                          <td className="py-3 px-3 text-right select-none">
+                            <span className={`inline-block px-2.5 py-0.5 rounded-full font-bold font-display text-[10px] uppercase tracking-wider ${badgeColor}`}>
+                              +{points} pts
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
 
         {/* Auth prompt */}
         {!user && (
