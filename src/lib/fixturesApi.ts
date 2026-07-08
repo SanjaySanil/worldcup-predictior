@@ -146,8 +146,12 @@ const KNOCKOUT_TEAM_OVERRIDES: Record<number, { homeTeam: string; awayTeam: stri
   // Quarter-finals Overrides
   // Match 97 – Jul 09 20:00 UTC → Jul 10 01:30 IST  ← France vs Morocco (Fri 1:30 AM IST)
   97: { homeTeam: 'France',        awayTeam: 'Morocco' },
+  // Match 98 – Jul 10 19:00 UTC → Jul 11 00:30 IST  ← Spain vs Belgium (Sat 12:30 AM IST)
+  98: { homeTeam: 'Spain',         awayTeam: 'Belgium' },
   // Match 99 – Jul 11 21:00 UTC → Jul 12 02:30 IST  ← Norway vs England (Sun 2:30 AM IST)
   99: { homeTeam: 'Norway',        awayTeam: 'England' },
+  // Match 100 – Jul 12 01:00 UTC → Jul 12 06:30 IST  ← Argentina vs Switzerland (Sun 6:30 AM IST)
+  100: { homeTeam: 'Argentina',    awayTeam: 'Switzerland' },
 };
 
 export interface ApiFixture {
