@@ -95,63 +95,69 @@ const KNOCKOUT_TEAM_OVERRIDES: Record<number, { homeTeam: string; awayTeam: stri
   // Match 73 – Jun 28 19:00 UTC → Jun 29 00:30 IST
   73: { homeTeam: 'South Africa', awayTeam: 'Canada' },
   // Match 76 – Jun 29 17:00 UTC → Jun 29 22:30 IST  ← Brazil vs Japan (Tomorrow 10:30 PM IST)
-  76: { homeTeam: 'Brazil',       awayTeam: 'Japan' },
+  76: { homeTeam: 'Brazil', awayTeam: 'Japan' },
   // Match 74 – Jun 29 20:30 UTC → Jun 30 02:00 IST  ← Germany vs Paraguay (Tue 2:00 AM IST)
-  74: { homeTeam: 'Germany',      awayTeam: 'Paraguay' },
+  74: { homeTeam: 'Germany', awayTeam: 'Paraguay' },
   // Match 75 – Jun 30 01:00 UTC → Jun 30 06:30 IST  ← Netherlands vs Morocco (Tue 6:30 AM IST)
-  75: { homeTeam: 'Netherlands',  awayTeam: 'Morocco' },
+  75: { homeTeam: 'Netherlands', awayTeam: 'Morocco' },
   // Match 78 – Jun 30 17:00 UTC → Jun 30 22:30 IST  ← Côte d'Ivoire vs Norway (Tue 10:30 PM IST)
   78: { homeTeam: "Cote d'Ivoire", awayTeam: 'Norway' },
   // Match 77 – Jun 30 21:00 UTC → Jul 01 02:30 IST  ← France vs Sweden (Wed 2:30 AM IST)
-  77: { homeTeam: 'France',       awayTeam: 'Sweden' },
+  77: { homeTeam: 'France', awayTeam: 'Sweden' },
   // Match 79 – Jul 01 01:00 UTC → Jul 01 06:30 IST  ← Mexico vs Ecuador (Wed 6:30 AM IST)
-  79: { homeTeam: 'Mexico',       awayTeam: 'Ecuador' },
+  79: { homeTeam: 'Mexico', awayTeam: 'Ecuador' },
   // Match 80 – Jul 01 16:00 UTC → Jul 01 21:30 IST  ← England vs Congo DR (Wed 9:30 PM IST)
-  80: { homeTeam: 'England',      awayTeam: 'Congo DR' },
+  80: { homeTeam: 'England', awayTeam: 'Congo DR' },
   // Match 82 – Jul 01 20:00 UTC → Jul 02 01:30 IST  ← Belgium vs Senegal (Thu 1:30 AM IST)
-  82: { homeTeam: 'Belgium',      awayTeam: 'Senegal' },
+  82: { homeTeam: 'Belgium', awayTeam: 'Senegal' },
   // Match 81 – Jul 02 00:00 UTC → Jul 02 05:30 IST  ← USA vs Bosnia (Thu 5:30 AM IST)
   81: { homeTeam: 'United States', awayTeam: 'Bosnia and Herzegovina' },
   // Match 84 – Jul 02 19:00 UTC → Jul 03 00:30 IST  ← Spain vs Austria (Fri 12:30 AM IST)
-  84: { homeTeam: 'Spain',        awayTeam: 'Austria' },
+  84: { homeTeam: 'Spain', awayTeam: 'Austria' },
   // Match 83 – Jul 02 23:00 UTC → Jul 03 04:30 IST  ← Portugal vs Croatia (Fri 4:30 AM IST)
-  83: { homeTeam: 'Portugal',     awayTeam: 'Croatia' },
+  83: { homeTeam: 'Portugal', awayTeam: 'Croatia' },
   // Match 85 – Jul 03 03:00 UTC → Jul 03 08:30 IST  ← Switzerland vs Algeria (Fri 8:30 AM IST)
-  85: { homeTeam: 'Switzerland',  awayTeam: 'Algeria' },
+  85: { homeTeam: 'Switzerland', awayTeam: 'Algeria' },
   // Match 88 – Jul 03 18:00 UTC → Jul 03 23:30 IST  ← Australia vs Egypt (Fri 11:30 PM IST)
-  88: { homeTeam: 'Australia',    awayTeam: 'Egypt' },
+  88: { homeTeam: 'Australia', awayTeam: 'Egypt' },
   // Match 86 – Jul 03 22:00 UTC → Jul 04 03:30 IST  ← Argentina vs Cabo Verde (Sat 3:30 AM IST)
-  86: { homeTeam: 'Argentina',    awayTeam: 'Cabo Verde' },
+  86: { homeTeam: 'Argentina', awayTeam: 'Cabo Verde' },
   // Match 87 – Jul 04 01:30 UTC → Jul 04 07:00 IST  ← Colombia vs Ghana (Sat 7:00 AM IST)
-  87: { homeTeam: 'Colombia',     awayTeam: 'Ghana' },
+  87: { homeTeam: 'Colombia', awayTeam: 'Ghana' },
 
   // Round of 16 Overrides
   // Match 89 – Jul 04 21:00 UTC → Jul 05 02:30 IST  ← Paraguay vs France (Sun 2:30 AM IST)
-  89: { homeTeam: 'Paraguay',      awayTeam: 'France' },
+  89: { homeTeam: 'Paraguay', awayTeam: 'France' },
   // Match 90 – Jul 04 17:00 UTC → Jul 04 22:30 IST  ← Canada vs Morocco (Sat 10:30 PM IST)
-  90: { homeTeam: 'Canada',        awayTeam: 'Morocco' },
+  90: { homeTeam: 'Canada', awayTeam: 'Morocco' },
   // Match 91 – Jul 05 20:00 UTC → Jul 06 01:30 IST  ← Brazil vs Norway (Mon 1:30 AM IST)
-  91: { homeTeam: 'Brazil',        awayTeam: 'Norway' },
+  91: { homeTeam: 'Brazil', awayTeam: 'Norway' },
   // Match 92 – Jul 06 00:00 UTC → Jul 06 05:30 IST  ← Mexico vs England (Mon 5:30 AM IST)
-  92: { homeTeam: 'Mexico',        awayTeam: 'England' },
+  92: { homeTeam: 'Mexico', awayTeam: 'England' },
   // Match 93 – Jul 06 19:00 UTC → Jul 07 00:30 IST  ← Portugal vs Spain (Tue 12:30 AM IST)
-  93: { homeTeam: 'Portugal',      awayTeam: 'Spain' },
+  93: { homeTeam: 'Portugal', awayTeam: 'Spain' },
   // Match 94 – Jul 07 00:00 UTC → Jul 07 05:30 IST  ← USA vs Belgium (Tue 5:30 AM IST)
   94: { homeTeam: 'United States', awayTeam: 'Belgium' },
   // Match 95 – Jul 07 16:00 UTC → Jul 07 21:30 IST  ← Argentina vs Egypt (Tue 9:30 PM IST)
-  95: { homeTeam: 'Argentina',     awayTeam: 'Egypt' },
+  95: { homeTeam: 'Argentina', awayTeam: 'Egypt' },
   // Match 96 – Jul 07 20:00 UTC → Jul 08 01:30 IST  ← Switzerland vs Colombia (Wed 1:30 AM IST)
-  96: { homeTeam: 'Switzerland',   awayTeam: 'Colombia' },
+  96: { homeTeam: 'Switzerland', awayTeam: 'Colombia' },
 
   // Quarter-finals Overrides
   // Match 97 – Jul 09 20:00 UTC → Jul 10 01:30 IST  ← France vs Morocco (Fri 1:30 AM IST)
-  97: { homeTeam: 'France',        awayTeam: 'Morocco' },
+  97: { homeTeam: 'France', awayTeam: 'Morocco' },
   // Match 98 – Jul 10 19:00 UTC → Jul 11 00:30 IST  ← Spain vs Belgium (Sat 12:30 AM IST)
-  98: { homeTeam: 'Spain',         awayTeam: 'Belgium' },
+  98: { homeTeam: 'Spain', awayTeam: 'Belgium' },
   // Match 99 – Jul 11 21:00 UTC → Jul 12 02:30 IST  ← Norway vs England (Sun 2:30 AM IST)
-  99: { homeTeam: 'Norway',        awayTeam: 'England' },
+  99: { homeTeam: 'Norway', awayTeam: 'England' },
   // Match 100 – Jul 12 01:00 UTC → Jul 12 06:30 IST  ← Argentina vs Switzerland (Sun 6:30 AM IST)
-  100: { homeTeam: 'Argentina',    awayTeam: 'Switzerland' },
+  100: { homeTeam: 'Argentina', awayTeam: 'Switzerland' },
+
+  // Semi-finals Overrides
+  // Match 101 – Jul 14 19:00 UTC → Jul 15 00:30 IST  ← France vs Spain (Wed 12:30 AM IST)
+  101: { homeTeam: 'France', awayTeam: 'Spain' },
+  // Match 102 – Jul 15 19:00 UTC → Jul 16 00:30 IST  ← England vs Argentina (Thu 12:30 AM IST)
+  102: { homeTeam: 'England', awayTeam: 'Argentina' },
 };
 
 export interface ApiFixture {

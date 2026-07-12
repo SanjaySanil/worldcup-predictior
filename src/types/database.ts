@@ -29,6 +29,7 @@ export interface Database {
           updated_at?: string;
         };
         Update: Partial<Database['public']['Tables']['profiles']['Insert']>;
+        Relationships: [];
       };
       tournaments: {
         Row: {
@@ -60,6 +61,7 @@ export interface Database {
           updated_at?: string;
         };
         Update: Partial<Database['public']['Tables']['tournaments']['Insert']>;
+        Relationships: [];
       };
       competitions: {
         Row: {
@@ -85,6 +87,7 @@ export interface Database {
           updated_at?: string;
         };
         Update: Partial<Database['public']['Tables']['competitions']['Insert']>;
+        Relationships: [];
       };
       teams: {
         Row: {
@@ -108,6 +111,7 @@ export interface Database {
           created_at?: string;
         };
         Update: Partial<Database['public']['Tables']['teams']['Insert']>;
+        Relationships: [];
       };
       match_days: {
         Row: {
@@ -127,6 +131,7 @@ export interface Database {
           created_at?: string;
         };
         Update: Partial<Database['public']['Tables']['match_days']['Insert']>;
+        Relationships: [];
       };
       matches: {
         Row: {
@@ -172,6 +177,22 @@ export interface Database {
           updated_at?: string;
         };
         Update: Partial<Database['public']['Tables']['matches']['Insert']>;
+        Relationships: [
+          {
+            foreignKeyName: "matches_home_team_id_fkey";
+            columns: ["home_team_id"];
+            isOneToOne: false;
+            referencedRelation: "teams";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "matches_away_team_id_fkey";
+            columns: ["away_team_id"];
+            isOneToOne: false;
+            referencedRelation: "teams";
+            referencedColumns: ["id"];
+          }
+        ];
       };
       predictions: {
         Row: {
@@ -199,6 +220,7 @@ export interface Database {
           submitted_at?: string;
         };
         Update: Partial<Database['public']['Tables']['predictions']['Insert']>;
+        Relationships: [];
       };
       leaderboard: {
         Row: {
@@ -232,6 +254,15 @@ export interface Database {
           updated_at?: string;
         };
         Update: Partial<Database['public']['Tables']['leaderboard']['Insert']>;
+        Relationships: [
+          {
+            foreignKeyName: "leaderboard_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          }
+        ];
       };
       point_settings: {
         Row: {
@@ -261,6 +292,7 @@ export interface Database {
           updated_at?: string;
         };
         Update: Partial<Database['public']['Tables']['point_settings']['Insert']>;
+        Relationships: [];
       };
       prizes: {
         Row: {
@@ -286,6 +318,7 @@ export interface Database {
           created_at?: string;
         };
         Update: Partial<Database['public']['Tables']['prizes']['Insert']>;
+        Relationships: [];
       };
       announcements: {
         Row: {
@@ -313,6 +346,7 @@ export interface Database {
           created_at?: string;
         };
         Update: Partial<Database['public']['Tables']['announcements']['Insert']>;
+        Relationships: [];
       };
       user_notifications: {
         Row: {
@@ -334,6 +368,7 @@ export interface Database {
           created_at?: string;
         };
         Update: Partial<Database['public']['Tables']['user_notifications']['Insert']>;
+        Relationships: [];
       };
       audit_logs: {
         Row: {
@@ -361,6 +396,33 @@ export interface Database {
           created_at?: string;
         };
         Update: Partial<Database['public']['Tables']['audit_logs']['Insert']>;
+        Relationships: [];
+      };
+      match_results: {
+        Row: {
+          match_id: string;
+          home_score: number;
+          away_score: number;
+          status: string;
+          result_published: boolean;
+          result_published_at: string | null;
+          updated_at: string | null;
+          is_knockout: boolean;
+          penalty_winner: 'home' | 'away' | null;
+        };
+        Insert: {
+          match_id: string;
+          home_score: number;
+          away_score: number;
+          status?: string;
+          result_published?: boolean;
+          result_published_at?: string | null;
+          updated_at?: string | null;
+          is_knockout?: boolean;
+          penalty_winner?: 'home' | 'away' | null;
+        };
+        Update: Partial<Database['public']['Tables']['match_results']['Insert']>;
+        Relationships: [];
       };
     };
     Views: Record<string, never>;
