@@ -158,6 +158,12 @@ const KNOCKOUT_TEAM_OVERRIDES: Record<number, { homeTeam: string; awayTeam: stri
   101: { homeTeam: 'France', awayTeam: 'Spain' },
   // Match 102 – Jul 15 19:00 UTC → Jul 16 00:30 IST  ← England vs Argentina (Thu 12:30 AM IST)
   102: { homeTeam: 'England', awayTeam: 'Argentina' },
+
+  // Third Place Play-off
+  103: { homeTeam: 'France', awayTeam: 'England' },
+
+  // Final
+  104: { homeTeam: 'Spain', awayTeam: 'Argentina' },
 };
 
 export interface ApiFixture {
