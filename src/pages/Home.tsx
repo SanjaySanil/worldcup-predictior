@@ -216,65 +216,67 @@ export default function Home() {
     <div className="min-h-screen bg-pitch-900">
       {/* Hero / Title */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-6 text-center">
-        <h1 className="font-display text-3xl sm:text-4xl font-bold uppercase tracking-widest text-white mb-2">
-          DG Score Predictor
-        </h1>
-        <p className="text-pitch-200 text-sm sm:text-base max-w-xl mx-auto">
-          Predict each day's scorelines before kickoff and climb the live leaderboard. Free to play.
-        </p>
+        <div className="mb-8 animate-fade-in">
+          <h1 className="font-display text-4xl sm:text-6xl font-black uppercase tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-gold-300 via-gold-500 to-gold-300 mb-4 drop-shadow-lg">
+            Tournament Concluded!
+          </h1>
+          <p className="text-pitch-100 text-lg sm:text-xl max-w-2xl mx-auto font-medium">
+            Thank you to everyone who participated in the DG Score Predictor. It was an incredible journey, and the final results are in!
+          </p>
+        </div>
 
-
-        {/* Top Scorer Card */}
+        {/* Tournament Winner Card */}
         {topScorer && (
-          <div className="mt-6 max-w-2xl mx-auto border border-gold-500/20 hover:border-gold-500/50 rounded-xl bg-pitch-800/60 backdrop-blur-md shadow-gold hover:shadow-gold-lg transition-all duration-300 transform hover:-translate-y-0.5 flex flex-col sm:flex-row items-center justify-between p-4 px-6 gap-4 animate-fade-in group">
-            {/* Left: Laurel Wreath & User details */}
-            <div className="flex items-center gap-4">
-              <div className="relative flex items-center justify-center w-14 h-14 select-none">
-                {/* Laurel Wreath SVG */}
-                <svg 
-                  className="absolute w-14 h-14 text-gold-500/80 group-hover:scale-110 transition-transform duration-500" 
-                  viewBox="0 0 100 100" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  strokeWidth="4.5"
-                >
-                  {/* Left branch */}
-                  <path d="M 35 75 C 20 60, 20 40, 35 25" strokeLinecap="round" />
-                  <path d="M 35 72 L 28 68 M 28 58 L 21 56 M 25 46 L 18 44 M 29 34 L 23 30" strokeLinecap="round" />
-                  {/* Right branch */}
-                  <path d="M 65 75 C 80 60, 80 40, 65 25" strokeLinecap="round" />
-                  <path d="M 65 72 L 72 68 M 72 58 L 79 56 M 75 46 L 82 44 M 71 34 L 77 30" strokeLinecap="round" />
-                </svg>
-                {/* Crown Icon */}
-                <Crown className="w-6 h-6 text-gold-400 absolute animate-pulse" />
-              </div>
-              <div className="text-left">
-                <div className="text-white font-display font-bold text-lg uppercase tracking-wider group-hover:text-gold-300 transition-colors duration-300">
-                  {topScorer.profiles?.username || '---'}
-                </div>
-                <div className="text-xs text-pitch-300 font-semibold mt-0.5">
-                  <span className="text-gold-400 font-black font-display text-sm">{topScorer.total_points || 0}</span> POINTS
-                </div>
-              </div>
-            </div>
+          <div className="mt-6 max-w-3xl mx-auto border-2 border-gold-400 rounded-2xl bg-gradient-to-b from-gold-900/40 to-pitch-900/80 backdrop-blur-md shadow-[0_0_50px_rgba(250,204,21,0.3)] flex flex-col items-center justify-center p-8 gap-6 animate-fade-in group relative overflow-hidden">
+             <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-gold-500/20 via-transparent to-transparent opacity-60"></div>
+             
+             <div className="flex flex-col items-center z-10">
+               <div className="flex items-center gap-3 bg-gold-500/20 px-6 py-2 rounded-full border border-gold-400/50 mb-6">
+                 <Trophy className="w-6 h-6 text-gold-400 animate-bounce" />
+                 <span className="font-display font-black uppercase tracking-widest text-sm text-gold-300">
+                   Grand Champion
+                 </span>
+                 <Trophy className="w-6 h-6 text-gold-400 animate-bounce" />
+               </div>
 
-            {/* Center: Badge */}
-            <div className="flex items-center gap-2 bg-gold-500/10 px-4 py-1.5 rounded-full border border-gold-500/20 group-hover:bg-gold-500/20 transition-all duration-300 select-none">
-              <Trophy className="w-4 h-4 text-gold-400 animate-bounce" />
-              <span className="font-display font-bold uppercase tracking-widest text-xs text-gold-400">
-                Today's Top Scorer
-              </span>
-            </div>
+               <div className="relative flex items-center justify-center w-32 h-32 select-none mb-4">
+                 {/* Laurel Wreath SVG */}
+                 <svg 
+                   className="absolute w-32 h-32 text-gold-500 group-hover:scale-110 transition-transform duration-700" 
+                   viewBox="0 0 100 100" 
+                   fill="none" 
+                   stroke="currentColor" 
+                   strokeWidth="3"
+                 >
+                   <path d="M 35 75 C 20 60, 20 40, 35 25" strokeLinecap="round" />
+                   <path d="M 35 72 L 28 68 M 28 58 L 21 56 M 25 46 L 18 44 M 29 34 L 23 30" strokeLinecap="round" />
+                   <path d="M 65 75 C 80 60, 80 40, 65 25" strokeLinecap="round" />
+                   <path d="M 65 72 L 72 68 M 72 58 L 79 56 M 75 46 L 82 44 M 71 34 L 77 30" strokeLinecap="round" />
+                 </svg>
+                 <Crown className="w-16 h-16 text-gold-400 absolute animate-pulse" />
+               </div>
 
-            {/* Right: Accuracy */}
-            <div className="text-center sm:text-right">
-              <div className="text-[10px] text-pitch-400 font-bold uppercase tracking-wider select-none">
-                Accuracy
-              </div>
-              <div className="text-xl font-black text-success-400 font-display mt-0.5 group-hover:text-success-300 transition-colors duration-300 select-none">
-                {topScorer.accuracy != null ? `${Math.round(topScorer.accuracy)}%` : '0%'}
-              </div>
-            </div>
+               <div className="text-center">
+                 <div className="text-white font-display font-black text-4xl sm:text-5xl uppercase tracking-widest drop-shadow-md mb-2 group-hover:text-gold-300 transition-colors duration-300">
+                   {topScorer.profiles?.username || '---'}
+                 </div>
+                 <div className="text-gold-200 text-lg sm:text-xl font-medium mb-6">
+                   All hail the Prediction King! 👑
+                 </div>
+                 
+                 <div className="flex items-center justify-center gap-8 mt-2 bg-pitch-900/50 px-8 py-4 rounded-xl border border-gold-500/20">
+                   <div className="text-center">
+                     <div className="text-xs text-pitch-300 font-bold uppercase tracking-wider mb-1">Total Points</div>
+                     <div className="text-3xl font-black text-gold-400 font-display">{topScorer.total_points || 0}</div>
+                   </div>
+                   <div className="w-px h-12 bg-gold-500/30"></div>
+                   <div className="text-center">
+                     <div className="text-xs text-pitch-300 font-bold uppercase tracking-wider mb-1">Accuracy</div>
+                     <div className="text-3xl font-black text-success-400 font-display">{topScorer.accuracy != null ? `${Math.round(topScorer.accuracy)}%` : '0%'}</div>
+                   </div>
+                 </div>
+               </div>
+             </div>
           </div>
         )}
 
